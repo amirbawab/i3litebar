@@ -1,0 +1,89 @@
+#!/bin/bash
+
+###############
+#   HEADER
+###############
+
+# Version
+echo '{"version":1}'
+
+# Start the content array
+echo '[[]'
+
+# Prepare i3 json buffer
+I3LB_BUFFER=""
+
+#################
+#    CONFIG
+#################
+
+# Refresh time (second)
+I3LB_SLEEP=1
+
+#################
+#  JSON ENTRY
+#################
+
+# Template for the i3bar json entry
+function i3_json_entry() {
+    # Params
+    local l_name="$1"
+    local l_full_text="$2"
+
+    # Template json entry
+    I3LB_BUFFER="${I3LB_BUFFER},{\"name\":\"${l_name}\",\"full_text\":\"${l_full_text}\"}"
+}
+
+# Prepare the json header
+function i3_json_header() {
+    I3LB_BUFFER=",[{\"full_text\":\"\"}"
+}
+
+# Prepare the json footer
+function i3_json_footer() {
+    I3LB_BUFFER="${I3LB_BUFFER}]"
+}
+
+###############
+#    TABS
+###############
+
+# Show date
+function i3lb_date() {
+    i3_json_entry "time" "$(date "+$1")"
+}
+
+# Battery info
+function i3lb_simple_battery() {
+    local capacity=$(cat /sys/class/power_supply/BAT${1}/capacity)
+    local status=$(cat /sys/class/power_supply/BAT${1}/status)
+    i3_json_entry "simple_battery" "${capacity}% ${status}"
+}
+
+###############
+#     MAIN
+###############
+
+# Main function
+function main() {
+    # Now send blocks with information forever:
+    while :;
+    do
+        # Must be the first to execute
+        i3_json_header
+
+        ############
+        #   TABS
+        ############
+        i3lb_date "%Y-%m-%d %a %H:%M"
+        i3lb_simple_battery 0
+        
+        # Must be the last to execute
+        i3_json_footer
+        echo ${I3LB_BUFFER}
+        sleep ${I3LB_SLEEP}
+    done
+}
+
+# Call main function
+main
