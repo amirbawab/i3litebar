@@ -76,8 +76,7 @@ function i3lb_simple_volume() {
 function i3_USR1_handler() {
 
     # Refresh on USR1 signal
-    i3_refresh
-    echo ${I3LB_BUFFER}
+    i3_call
 }
 
 ###############
@@ -91,6 +90,15 @@ function i3_refresh() {
     i3lb_simple_volume
 }
 
+# Steps required for generating JSON
+function i3_call() {
+    I3LB_BUFFER=""
+    i3_json_header
+    i3_refresh
+    i3_json_footer
+    echo ${I3LB_BUFFER}
+}
+
 # Main function
 function i3_main() {
     # Register handler for USR1
@@ -99,15 +107,7 @@ function i3_main() {
     # Now send blocks with information forever:
     while :;
     do
-        # Must be the first to execute
-        i3_json_header
-
-        # Refresh tabs
-        i3_refresh
-        
-        # Must be the last to execute
-        i3_json_footer
-        echo ${I3LB_BUFFER}
+        i3_call
         sleep ${I3LB_SLEEP} &
         wait
     done
