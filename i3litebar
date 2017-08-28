@@ -18,7 +18,7 @@ I3LB_BUFFER=""
 #################
 
 # Refresh time (second)
-I3LB_SLEEP=1
+I3LB_SLEEP=10
 
 #################
 #  JSON ENTRY
@@ -60,30 +60,58 @@ function i3lb_simple_battery() {
     i3_json_entry "simple_battery" "${capacity}% ${status}"
 }
 
+# System volume
+function i3lb_simple_volume() {
+    local vol=$(pactl list sinks | command grep "Volume: front" | awk '{print $5}')
+    local mute=$(pactl list sinks | command grep "Mute:" | awk '{print $2}')
+    if [[ $mute == "yes" ]]; then
+        vol="0%"
+    fi
+    i3_json_entry "volume" "Volume ${vol}"
+}
+
+###############
+#    SIGNAL
+###############
+function i3_USR1_handler() {
+
+    # Refresh on USR1 signal
+    i3lb_refresh
+    echo ${I3LB_BUFFER}
+}
+
 ###############
 #     MAIN
 ###############
 
+# Tabs in order
+function i3lb_refresh() {
+    i3lb_date "%Y-%m-%d %a %H:%M"
+    i3lb_simple_battery 0
+    i3lb_simple_volume
+}
+
 # Main function
-function main() {
+function i3lb_main() {
+    # Register handler for USR1
+    trap "i3_USR1_handler" SIGUSR1
+
     # Now send blocks with information forever:
     while :;
     do
         # Must be the first to execute
         i3_json_header
 
-        ############
-        #   TABS
-        ############
-        i3lb_date "%Y-%m-%d %a %H:%M"
-        i3lb_simple_battery 0
+        # Refresh tabs
+        i3lb_refresh
         
         # Must be the last to execute
         i3_json_footer
         echo ${I3LB_BUFFER}
-        sleep ${I3LB_SLEEP}
+        sleep ${I3LB_SLEEP} &
+        wait
     done
 }
 
 # Call main function
-main
+i3lb_main
