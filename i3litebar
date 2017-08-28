@@ -18,7 +18,7 @@ I3LB_BUFFER=""
 #################
 
 # Refresh time (second)
-I3LB_SLEEP=10
+I3LB_SLEEP=5
 
 #################
 #  JSON ENTRY
