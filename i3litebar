@@ -76,7 +76,7 @@ function i3lb_simple_volume() {
 function i3_USR1_handler() {
 
     # Refresh on USR1 signal
-    i3lb_refresh
+    i3_refresh
     echo ${I3LB_BUFFER}
 }
 
@@ -85,14 +85,14 @@ function i3_USR1_handler() {
 ###############
 
 # Tabs in order
-function i3lb_refresh() {
+function i3_refresh() {
     i3lb_date "%Y-%m-%d %a %H:%M"
     i3lb_simple_battery 0
     i3lb_simple_volume
 }
 
 # Main function
-function i3lb_main() {
+function i3_main() {
     # Register handler for USR1
     trap "i3_USR1_handler" SIGUSR1
 
@@ -103,7 +103,7 @@ function i3lb_main() {
         i3_json_header
 
         # Refresh tabs
-        i3lb_refresh
+        i3_refresh
         
         # Must be the last to execute
         i3_json_footer
@@ -114,4 +114,4 @@ function i3lb_main() {
 }
 
 # Call main function
-i3lb_main
+i3_main
